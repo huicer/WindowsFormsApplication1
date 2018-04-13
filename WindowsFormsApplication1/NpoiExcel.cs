@@ -179,11 +179,12 @@ namespace WindowsFormsApplication1
                     for (int j = 0; j < row.LastCellNum; j++)  //对工作表每一列  
                     {
                         string cellValue = row.GetCell(j).ToString(); //获取i行j列数据  
-                        Console.WriteLine(cellValue);
+                        //Console.WriteLine(cellValue);
+
                     }
                 }
             }
-            Console.ReadLine();
+            //Console.ReadLine();
             fileStream.Close();
             workbook.Close();
         }

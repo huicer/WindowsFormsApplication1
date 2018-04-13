@@ -116,13 +116,20 @@ namespace WindowsFormsApplication1
             //FileSvr fileSvr = new FileSvr();
             //System.Data.DataTable dt = fileSvr.GetExcelDatatable("C:\\Users\\NewSpring\\Desktop\\Demo\\InExcelOutExcel\\InExcelOutExcel\\excel\\ExcelToDB.xlsx", "mapTable");
             //fileSvr.InsetData(dt);
+            //Form childForm = new Form();
+            //childForm.MdiParent = this;
+            //childForm.Text = "窗口 " + childFormNumber++;
+            //childForm.Show();
             OpenFileDialog openFileDialog = new OpenFileDialog();
             openFileDialog.InitialDirectory = Environment.GetFolderPath(Environment.SpecialFolder.Personal);
             openFileDialog.Filter = "Excel97-2003文件(*.xls)|*.xls|Excel文件(*.xlsx) | *.xlsx |所有文件(*.*)|*.*";
             if (openFileDialog.ShowDialog(this) == DialogResult.OK)
             {
                 string fileName = openFileDialog.FileName;
-                NpoiExcel.ExcelImport(fileName);
+                DataTable dt = null;
+                //NpoiExcel.ExcelImport(fileName);
+               dt = NpoiExcel.ExcelToTable(fileName);
+
             }
 
 
