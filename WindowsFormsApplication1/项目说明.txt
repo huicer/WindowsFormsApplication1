@@ -1,1 +1,7 @@
-﻿
+﻿NuGet 程序包管理器
+使用NPOI ，NPOI是指构建在POI 3.x版本之上的一个程序，
+NPOI可以在没有安装Office的情况下对Word或Excel文档进行读写操作。
+NPOI是一个开源的C#读写Excel、WORD等微软OLE2组件文档的项目。
+
+
+命令：PM>Install-Package NPOI -Version 2.3.0
