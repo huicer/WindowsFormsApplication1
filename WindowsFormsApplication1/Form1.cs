@@ -137,9 +137,15 @@ namespace WindowsFormsApplication1
 
         private void 导入ToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            FileSvr fileSvr = new FileSvr();
-            System.Data.DataTable dt = fileSvr.GetExcelDatatable("C:\\Users\\NewSpring\\Desktop\\Demo\\InExcelOutExcel\\InExcelOutExcel\\excel\\ExcelToDB.xlsx", "mapTable");
-            fileSvr.InsetData(dt);
+            //FileSvr fileSvr = new FileSvr();
+            //System.Data.DataTable dt = fileSvr.GetExcelDatatable("C:\\Users\\NewSpring\\Desktop\\Demo\\InExcelOutExcel\\InExcelOutExcel\\excel\\ExcelToDB.xlsx", "mapTable");
+            //fileSvr.InsetData(dt);
+            Form child = new Form();
+
+            child.MdiParent = this;
+
+            child.Show();
+
         }
     }
 }

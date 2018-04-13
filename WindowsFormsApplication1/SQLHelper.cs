@@ -31,26 +31,31 @@ namespace WindowsFormsApplication1
         /// <returns></returns>
         public static bool ConnectionOK()
         {
-
             bool result = false;
 
             MySqlCommand cmd = new MySqlCommand();
-
-
+            
             using (MySqlConnection conn = new MySqlConnection(connectionString))
             {
-                conn.Open();
-                if (conn.State == ConnectionState.Open)
+                try
                 {
-                    MessageBox.Show("连接成功！");
-                    result = true;
+                     conn.Open();
+
+                    if (conn.State == ConnectionState.Open)
+                    {
+                        MessageBox.Show("连接成功！");
+                        result = true;
+                    }
                 }
-                else
+                catch (Exception e)
                 {
                     MessageBox.Show("连接失败！");
                 }
-                conn.Close();
-                return result;        
+                finally
+                {
+               conn.Close();                 
+                }          
+                  return result;    
             }
 
         }

@@ -7,7 +7,6 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using NPOI.HSSF.UserModel;
-using NPOI.SS.UserModel;
 using NPOI.XSSF.UserModel;
 
 
@@ -140,12 +139,26 @@ namespace WindowsFormsApplication1
             }
         }
 
-        private static void ExcelExport(string fileName)
+        /// <summary>
+        /// 将Excel文件导入到数据库系统中
+        /// </summary>
+        /// <param name="fileName"></param>
+        public static void ExcelImport(string fileName)
         {
             IWorkbook workbook = null;  //新建IWorkbook对象  
             //string fileName = "E:\\Excel2003.xls";
             //FileStream fileStream = new FileStream(@"E:\Excel2003.xls", FileMode.Open, FileAccess.Read);
-            FileStream fileStream = new FileStream(@fileName, FileMode.Open, FileAccess.Read);
+            FileStream fileStream = null;
+            try
+            {
+                fileStream =  new FileStream(@fileName, FileMode.Open, FileAccess.Read);
+            }
+            catch (Exception)
+            {
+
+                throw;
+            }
+          
 
            if (fileName.IndexOf(".xlsx") > 0) // 2007版本  
             {
@@ -157,6 +170,7 @@ namespace WindowsFormsApplication1
             }
             ISheet sheet = workbook.GetSheetAt(0);  //获取第一个工作表  
             IRow row;// = sheet.GetRow(0);            //新建当前工作表行数据  
+
             for (int i = 0; i < sheet.LastRowNum; i++)  //对工作表每一行  
             {
                 row = sheet.GetRow(i);   //row读入第i行数据  
@@ -174,7 +188,11 @@ namespace WindowsFormsApplication1
             workbook.Close();
         }
 
-        private static void ExcelImport(string fileName)
+        /// <summary>
+        /// 将数据库中的数据导出到Excel文件中
+        /// </summary>
+        /// <param name="fileName"></param>
+        public static void ExcelExport(string fileName)
         {
             //HSSF可以读取xls格式的Excel文件
             IWorkbook workbook = new HSSFWorkbook();
