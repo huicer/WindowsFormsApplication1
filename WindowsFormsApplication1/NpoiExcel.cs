@@ -139,5 +139,73 @@ namespace WindowsFormsApplication1
                     return "=" + cell.CellFormula;
             }
         }
+
+        private static void ExcelExport(string fileName)
+        {
+            IWorkbook workbook = null;  //新建IWorkbook对象  
+            //string fileName = "E:\\Excel2003.xls";
+            //FileStream fileStream = new FileStream(@"E:\Excel2003.xls", FileMode.Open, FileAccess.Read);
+            FileStream fileStream = new FileStream(@fileName, FileMode.Open, FileAccess.Read);
+
+           if (fileName.IndexOf(".xlsx") > 0) // 2007版本  
+            {
+                workbook = new XSSFWorkbook(fileStream);  //xlsx数据读入workbook  
+            }
+            else if (fileName.IndexOf(".xls") > 0) // 2003版本  
+            {
+                workbook = new HSSFWorkbook(fileStream);  //xls数据读入workbook  
+            }
+            ISheet sheet = workbook.GetSheetAt(0);  //获取第一个工作表  
+            IRow row;// = sheet.GetRow(0);            //新建当前工作表行数据  
+            for (int i = 0; i < sheet.LastRowNum; i++)  //对工作表每一行  
+            {
+                row = sheet.GetRow(i);   //row读入第i行数据  
+                if (row != null)
+                {
+                    for (int j = 0; j < row.LastCellNum; j++)  //对工作表每一列  
+                    {
+                        string cellValue = row.GetCell(j).ToString(); //获取i行j列数据  
+                        Console.WriteLine(cellValue);
+                    }
+                }
+            }
+            Console.ReadLine();
+            fileStream.Close();
+            workbook.Close();
+        }
+
+        private static void ExcelImport(string fileName)
+        {
+            //HSSF可以读取xls格式的Excel文件
+            IWorkbook workbook = new HSSFWorkbook();
+            //XSSF可以读取xlsx格式的Excel文件
+            //IWorkbook workbook = new XSSFWorkbook();
+
+            //Excel文件至少要有一个工作表sheet
+            ISheet sheet = workbook.CreateSheet("工作表");
+            //创建行
+            for (int i = 0; i < 10; i++)
+            {
+                IRow row = sheet.CreateRow(i); //i表示了创建行的索引，从0开始
+                //创建单元格
+                for (int j = 0; j < 5; j++)
+                {
+                    ICell cell = row.CreateCell(j);  //同时这个函数还有第二个重载，可以指定单元格存放数据的类型
+                    cell.SetCellValue(i.ToString() + j.ToString());
+                }
+            }
+
+            //表格制作完成后，保存
+            //创建一个文件流对象
+            using (FileStream fs = File.Open("test.xls", FileMode.OpenOrCreate))
+            {
+                workbook.Write(fs);
+                //最后记得关闭对象
+                workbook.Close();
+            }
+
+        }
+    
     }
+    
 }
