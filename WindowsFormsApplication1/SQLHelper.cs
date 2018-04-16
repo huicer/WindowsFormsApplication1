@@ -8,6 +8,8 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Configuration;
 using System.Windows.Forms;
+using System.Data.SqlClient;
+using System.IO;
 
 namespace WindowsFormsApplication1
 {
@@ -268,6 +270,75 @@ namespace WindowsFormsApplication1
                 }
             }
         }
+
+
+
+        /// <summary>        ///大批量数据插入,返回成功插入行数        /// </summary>        /// <param name="connectionString">数据库连接字符串</param>        /// <param name="table">数据表</param>        /// <returns>返回成功插入行数</returns>        public static int BulkInsert(DataTable table)        {            if (string.IsNullOrEmpty(table.TableName)) throw new Exception("请给DataTable的TableName属性附上表名称");            if (table.Rows.Count == 0) return 0;            int insertCount = 0;            string tmpPath = Path.GetTempFileName();            string csv = DataTableToCsv(table);            File.WriteAllText(tmpPath, csv);            using (MySqlConnection conn = new MySqlConnection(connectionString))            {                MySqlTransaction tran = null;                try                {                    conn.Open();                    tran = conn.BeginTransaction();                    MySqlBulkLoader bulk = new MySqlBulkLoader(conn)                    {                        FieldTerminator = ",",                        FieldQuotationCharacter = '"',                        EscapeCharacter = '"',                        LineTerminator = "\r\n",                        FileName = tmpPath,                        NumberOfLinesToSkip = 0,                        TableName = table.TableName,                    };                    bulk.Columns.AddRange(table.Columns.Cast<DataColumn>().Select(colum => colum.ColumnName).ToList());                    insertCount = bulk.Load();                    tran.Commit();                }                catch (MySqlException ex)                {                    if (tran != null) tran.Rollback();                    throw ex;                }            }            File.Delete(tmpPath);            return insertCount;        }
+
+
+
+        /// <summary>        ///将DataTable转换为标准的CSV        /// </summary>        /// <param name="table">数据表</param>        /// <returns>返回标准的CSV</returns>        private static string DataTableToCsv(DataTable table)        {
+            //以半角逗号（即,）作分隔符，列为空也要表达其存在。
+            //列内容如存在半角逗号（即,）则用半角引号（即""）将该字段值包含起来。
+            //列内容如存在半角引号（即"）则应替换成半角双引号（""）转义，并用半角引号（即""）将该字段值包含起来。
+            StringBuilder sb = new StringBuilder();            DataColumn colum;            foreach (DataRow row in table.Rows)            {                for (int i = 0; i < table.Columns.Count; i++)                {                    colum = table.Columns[i];                    if (i != 0) sb.Append(",");                    if (colum.DataType == typeof(string) && row[colum].ToString().Contains(","))                    {                        sb.Append("\"" + row[colum].ToString().Replace("\"", "\"\"") + "\"");                    }                    else sb.Append(row[colum].ToString());                }                sb.AppendLine();            }
+            return sb.ToString();        }
+
+        //public bool AddDataTableToDB(DataTable source, string tableName)
+        //{
+        //    MySqlTransaction tran = null;//声明一个事务对象  
+        //    try
+        //    {
+        //        using (MySqlConnection conn = new MySqlConnection(connectionString))
+        //        {
+        //            conn.Open();//打开链接  
+        //            using (tran = conn.BeginTransaction())
+        //            {
+        //                using (SqlBulkCopy copy = new SqlBulkCopy(conn, SqlBulkCopyOptions.Default, tran))
+        //                {
+        //                    copy.DestinationTableName = tableName;           //指定服务器上目标表的名称
+
+
+        //                    #region 进行字段映射
+        //                    if (tableName == "SYS_ClassRoom")
+        //                    {
+        //                        copy.ColumnMappings.Add("ClassRoomNo", "ClassRoomNo");
+        //                        copy.ColumnMappings.Add("ClassRoomName", "ClassRoomName");
+        //                        copy.ColumnMappings.Add("ClassID", "ClassID");
+        //                        copy.ColumnMappings.Add("ClassName", "ClassName");
+        //                        copy.ColumnMappings.Add("UserID", "UserID");
+        //                        copy.ColumnMappings.Add("LoginName", "LoginName");
+        //                        copy.ColumnMappings.Add("ClassRoomAdd", "ClassRoomAdd");
+        //                        copy.ColumnMappings.Add("ClassRoomType", "ClassRoomType");
+        //                        copy.ColumnMappings.Add("IsAccess", "IsAccess");
+        //                        copy.ColumnMappings.Add("Capacity", "Capacity");
+        //                        copy.ColumnMappings.Add("SecurityLeve", "SecurityLeve");
+        //                        copy.ColumnMappings.Add("XCount", "XCount");
+        //                        copy.ColumnMappings.Add("ycount", "ycount");
+        //                        copy.ColumnMappings.Add("CreateStaff", "CreateStaff");
+        //                        copy.ColumnMappings.Add("CreateDate", "CreateDate");
+        //                    }
+        //                    else if (tableName == "")
+        //                    {
+
+        //                    }
+        //                    #endregion
+
+
+        //                    copy.WriteToServer(source);                      //执行把DataTable中的数据写入DB  
+        //                    tran.Commit();                                      //提交事务  
+        //                    return true;                                        //返回True 执行成功！  
+        //                }
+        //            }
+        //        }
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        if (null != tran)
+        //            tran.Rollback();
+        //        return false;//返回False 执行失败！  
+        //    }
+        //}
 
 
     }
