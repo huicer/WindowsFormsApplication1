@@ -273,16 +273,81 @@ namespace WindowsFormsApplication1
 
 
 
-        /// <summary>        ///大批量数据插入,返回成功插入行数        /// </summary>        /// <param name="connectionString">数据库连接字符串</param>        /// <param name="table">数据表</param>        /// <returns>返回成功插入行数</returns>        public static int BulkInsert(DataTable table)        {            if (string.IsNullOrEmpty(table.TableName)) throw new Exception("请给DataTable的TableName属性附上表名称");            if (table.Rows.Count == 0) return 0;            int insertCount = 0;            string tmpPath = Path.GetTempFileName();            string csv = DataTableToCsv(table);            File.WriteAllText(tmpPath, csv);            using (MySqlConnection conn = new MySqlConnection(connectionString))            {                MySqlTransaction tran = null;                try                {                    conn.Open();                    tran = conn.BeginTransaction();                    MySqlBulkLoader bulk = new MySqlBulkLoader(conn)                    {                        FieldTerminator = ",",                        FieldQuotationCharacter = '"',                        EscapeCharacter = '"',                        LineTerminator = "\r\n",                        FileName = tmpPath,                        NumberOfLinesToSkip = 0,                        TableName = table.TableName,                    };                    bulk.Columns.AddRange(table.Columns.Cast<DataColumn>().Select(colum => colum.ColumnName).ToList());                    insertCount = bulk.Load();                    tran.Commit();                }                catch (MySqlException ex)                {                    if (tran != null) tran.Rollback();                    throw ex;                }            }            File.Delete(tmpPath);            return insertCount;        }
+        /// <summary>
+        ///大批量数据插入,返回成功插入行数
+        /// </summary>
+        /// <param name="connectionString">数据库连接字符串</param>
+        /// <param name="table">数据表</param>
+        /// <returns>返回成功插入行数</returns>
+        public static int BulkInsert(DataTable table)
+        {
+            if (string.IsNullOrEmpty(table.TableName)) throw new Exception("请给DataTable的TableName属性附上表名称");
+            if (table.Rows.Count == 0) return 0;
+            int insertCount = 0;
+            string tmpPath = Path.GetTempFileName();
+            string csv = DataTableToCsv(table);
+            File.WriteAllText(tmpPath, csv);
+            using (MySqlConnection conn = new MySqlConnection(connectionString))
+            {
+                MySqlTransaction tran = null;
+                try
+                {
+                    conn.Open();
+                    tran = conn.BeginTransaction();
+                    MySqlBulkLoader bulk = new MySqlBulkLoader(conn)
+                    {
+                        FieldTerminator = ",",
+                        FieldQuotationCharacter = '"',
+                        EscapeCharacter = '"',
+                        LineTerminator = "\r\n",
+                        FileName = tmpPath,
+                        NumberOfLinesToSkip = 0,
+                        TableName = table.TableName,
+                    };
+                    bulk.Columns.AddRange(table.Columns.Cast<DataColumn>().Select(colum => colum.ColumnName).ToList());
+                    insertCount = bulk.Load();
+                    tran.Commit();
+                }
+                catch (MySqlException ex)
+                {
+                    if (tran != null) tran.Rollback();
+                    throw ex;
+                }
+            }
+            File.Delete(tmpPath);
+            return insertCount;
+        }
 
 
 
-        /// <summary>        ///将DataTable转换为标准的CSV        /// </summary>        /// <param name="table">数据表</param>        /// <returns>返回标准的CSV</returns>        private static string DataTableToCsv(DataTable table)        {
+        /// <summary>
+        ///将DataTable转换为标准的CSV
+        /// </summary>
+        /// <param name="table">数据表</param>
+        /// <returns>返回标准的CSV</returns>
+        private static string DataTableToCsv(DataTable table)
+        {
             //以半角逗号（即,）作分隔符，列为空也要表达其存在。
             //列内容如存在半角逗号（即,）则用半角引号（即""）将该字段值包含起来。
             //列内容如存在半角引号（即"）则应替换成半角双引号（""）转义，并用半角引号（即""）将该字段值包含起来。
-            StringBuilder sb = new StringBuilder();            DataColumn colum;            foreach (DataRow row in table.Rows)            {                for (int i = 0; i < table.Columns.Count; i++)                {                    colum = table.Columns[i];                    if (i != 0) sb.Append(",");                    if (colum.DataType == typeof(string) && row[colum].ToString().Contains(","))                    {                        sb.Append("\"" + row[colum].ToString().Replace("\"", "\"\"") + "\"");                    }                    else sb.Append(row[colum].ToString());                }                sb.AppendLine();            }
-            return sb.ToString();        }
+            StringBuilder sb = new StringBuilder();
+            DataColumn colum;
+            foreach (DataRow row in table.Rows)
+            {
+                for (int i = 0; i < table.Columns.Count; i++)
+                {
+                    colum = table.Columns[i];
+                    if (i != 0) sb.Append(",");
+                    if (colum.DataType == typeof(string) && row[colum].ToString().Contains(","))
+                    {
+                        sb.Append("\"" + row[colum].ToString().Replace("\"", "\"\"") + "\"");
+                    }
+                    else sb.Append(row[colum].ToString());
+                }
+                sb.AppendLine();
+            }
+            return sb.ToString();
+        }
 
         //public bool AddDataTableToDB(DataTable source, string tableName)
         //{
