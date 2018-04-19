@@ -121,7 +121,7 @@ namespace WindowsFormsApplication1
         /// <param name="e"></param>
         private void saveToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            Form childForm = new Form2();
+            Form childForm = new ImportForm();
             childForm.MdiParent = this;
             childForm.Text = "窗口 " + childFormNumber++;
             childForm.Show();
