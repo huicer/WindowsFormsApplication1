@@ -1,4 +1,5 @@
-﻿using System;
+﻿using MySql.Data.MySqlClient;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
@@ -7,11 +8,18 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using Helpers;
 
 namespace WindowsFormsApplication1
 {
+
+   
+
     public partial class MainForm : Form
     {
+
+        public  Helpers.MySqlHelper mySqlHelper = new Helpers.MySqlHelper();
+
         private int childFormNumber = 0;
 
         public MainForm()
@@ -124,7 +132,16 @@ namespace WindowsFormsApplication1
 
         private void newToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            SQLHelper.ConnectionOK();
+            bool isok = mySqlHelper.ConnectionOK();
+            if (isok)
+            {
+                MessageBox.Show("数据库连接成功");
+            }
+        }
+
+        private void MainForm_Load(object sender, EventArgs e)
+        {
+
         }
     }
 }

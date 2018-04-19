@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using MySql.Data.MySqlClient;
+using System.Windows.Forms;
 
 namespace Helpers
 {
@@ -12,6 +13,9 @@ namespace Helpers
     /// </summary>
     public sealed partial class MySqlHelper
     {
+
+        #region 成员变量
+               
         /// <summary>
         /// 批量操作每批次记录数
         /// </summary>
@@ -27,6 +31,23 @@ namespace Helpers
         public static int CommandTimeOut = 600;
 
         /// <summary>
+        /// 数据库连接字符串
+        /// </summary>
+        public string ConnectionString { get; set; }        
+         #endregion
+
+
+        #region MySqlHelper构造函数
+        /// <summary>
+        ///初始化MySqlHelper实例
+        ///从web.config文件中的connectionStrings节点值获取
+        /// </summary>
+        public MySqlHelper()
+        {
+            this.ConnectionString = connectionString;
+        }
+
+        /// <summary>
         ///初始化MySqlHelper实例
         /// </summary>
         /// <param name="connectionString">数据库连接字符串</param>
@@ -34,14 +55,50 @@ namespace Helpers
         {
             this.ConnectionString = connectionString;
         }
-
-        /// <summary>
-        /// 数据库连接字符串
-        /// </summary>
-        public string ConnectionString { get; set; }
+        #endregion MySqlHelper构造函数
 
         #region 实例方法
 
+        #region 测试本地数据库连接是否成功ConnectionOK()
+        /// <summary>
+        /// 本地数据库连接是否成功
+        /// </summary>
+        /// <returns>true:成功；FALSE：失败</returns>
+        public  bool ConnectionOK()
+        {
+            bool result = false;
+
+            MySqlCommand cmd = new MySqlCommand();
+
+            using (MySqlConnection conn = new MySqlConnection(connectionString))
+            {
+                try
+                {
+                    conn.Open();
+
+                    if (conn.State == ConnectionState.Open)
+                    {
+                        //MessageBox.Show("连接成功！");
+                        result = true;
+                    }
+                }
+                catch (Exception e1)
+                {
+                     result = false;
+                    MessageBox.Show("连接失败！   "+e1.Message.ToString());
+                  
+                }
+                finally
+                {
+                    conn.Close();
+                }
+                return result;
+            }
+
+        }
+        #endregion 测试本地数据库连接是否成功ConnectionOK()      
+        
+        
         #region ExecuteNonQuery
 
         /// <summary>
