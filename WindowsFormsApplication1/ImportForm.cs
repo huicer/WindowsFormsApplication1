@@ -20,8 +20,7 @@ namespace WindowsFormsApplication1
 
         private void button1_Click(object sender, EventArgs e)
         {
-
-           
+                      
             OpenFileDialog openFileDialog = new OpenFileDialog();
             openFileDialog.InitialDirectory = Environment.GetFolderPath(Environment.SpecialFolder.Personal);
             openFileDialog.Filter = "Excel97-2003文件(*.xls)|*.xls|Excel文件(*.xlsx)|*.xlsx|所有文件(*.*)|*.*";
@@ -29,14 +28,12 @@ namespace WindowsFormsApplication1
             {
                 string fileName = openFileDialog.FileName;
                 DataTable dt = null;
+                listBox1.DataSource=  MySqlHelper.ExecuteArrayList("mytest", "student");
                 //NpoiExcel.ExcelImport(fileName);
-                dt = NpoiExcel.ExcelToTable(fileName);
-                dt.TableName = "t_photo";
-               dataGridView1.DataSource = dt.DefaultView;
-                MySqlHelper.BulkInsert(dt);
-
-
-
+               // dt = NpoiExcel.ExcelToTable(fileName);
+               // dt.TableName = "t_photo";
+               //dataGridView1.DataSource = dt.DefaultView;
+               // MySqlHelper.BulkInsert(dt);
             }
         }
 

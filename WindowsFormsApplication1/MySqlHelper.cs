@@ -5,6 +5,8 @@ using System.Linq;
 using System.Text;
 using MySql.Data.MySqlClient;
 using System.Windows.Forms;
+using System.Collections;
+using WindowsFormsApplication1;
 
 namespace Helpers
 {
@@ -20,6 +22,11 @@ namespace Helpers
         /// 批量操作每批次记录数
         /// </summary>
         public static int BatchSize = 2000;
+
+        /// <summary>
+        /// 使用的数据库名称
+        /// </summary>
+        public static string databaseName = MyFunction.GetAppConfig("databaseName");
 
         //数据库连接字符串（注意：这里的“DBConnectionString”一定要与web.config文件中connectionStrings节点值一致）
         public static readonly string connectionString =
@@ -802,8 +809,28 @@ namespace Helpers
 
         #endregion ExecuteDataSet
 
+        public static ArrayList ExecuteArrayList(string databasename,string tableName)
+        {
+            ArrayList list1 = new ArrayList();
+            string commandText = "SELECT COLUMN_NAME from information_schema.COLUMNS WHERE TABLE_NAME = @tablename AND TABLE_SCHEMA = @databasename";
+            MySqlParameter[] parm = new MySqlParameter[]
+            {
+                new MySqlParameter("@tablename",tableName),
+                new MySqlParameter("@databasename", databaseName)
+            };
+            MySqlDataReader sdr = ExecuteDataReader(connectionString, commandText, parm);
+            while (sdr.Read())
+            {
+                list1.Add(sdr[0].ToString());
+            }
+            sdr.Close();
+            return list1;
+        }
+
+
         #region 批量操作
 
+        #region BatchUpdate
         /// <summary>
         ///使用MySqlDataAdapter批量更新数据
         /// </summary>
@@ -848,7 +875,9 @@ namespace Helpers
                 connection.Dispose();
             }
         }
+        #endregion
 
+        #region BulkInsert
         /// <summary>
         ///大批量数据插入,返回成功插入行数
         /// </summary>
@@ -858,8 +887,6 @@ namespace Helpers
         {
             return BulkInsert(connectionString, table);
         }
-
-
 
         /// <summary>
         ///大批量数据插入,返回成功插入行数
@@ -905,7 +932,9 @@ namespace Helpers
             File.Delete(tmpPath);
             return insertCount;
         }
+        #endregion
 
+        #region DataTableToCsv
         /// <summary>
         ///将DataTable转换为标准的CSV
         /// </summary>
@@ -935,6 +964,7 @@ namespace Helpers
 
             return sb.ToString();
         }
+        #endregion
 
         #endregion 批量操作
 
