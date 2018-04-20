@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Helpers;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
@@ -19,9 +20,7 @@ namespace WindowsFormsApplication1
 
         private void button1_Click(object sender, EventArgs e)
         {
-            //FileSvr fileSvr = new FileSvr();
-            //System.Data.DataTable dt = fileSvr.GetExcelDatatable("C:\\Users\\NewSpring\\Desktop\\Demo\\InExcelOutExcel\\InExcelOutExcel\\excel\\ExcelToDB.xlsx", "mapTable");
-            //fileSvr.InsetData(dt);
+
            
             OpenFileDialog openFileDialog = new OpenFileDialog();
             openFileDialog.InitialDirectory = Environment.GetFolderPath(Environment.SpecialFolder.Personal);
@@ -34,7 +33,7 @@ namespace WindowsFormsApplication1
                 dt = NpoiExcel.ExcelToTable(fileName);
                 dt.TableName = "t_photo";
                dataGridView1.DataSource = dt.DefaultView;
-                SQLHelper.BulkInsert(dt);
+                MySqlHelper.BulkInsert(dt);
 
 
 

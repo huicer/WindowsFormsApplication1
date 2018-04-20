@@ -283,15 +283,6 @@ namespace Helpers
             BatchUpdate(ConnectionString, table);
         }
 
-        /// <summary>
-        ///大批量数据插入,返回成功插入行数
-        /// </summary>
-        /// <param name="table">数据表</param>
-        /// <returns>返回成功插入行数</returns>
-        public int BulkInsert(DataTable table)
-        {
-            return BulkInsert(ConnectionString, table);
-        }
 
         #endregion 批量操作
 
@@ -299,6 +290,7 @@ namespace Helpers
 
         #region 静态方法
 
+        #region PrepareCommand
         private static void PrepareCommand(MySqlCommand command, MySqlConnection connection, MySqlTransaction transaction, CommandType commandType, string commandText, MySqlParameter[] parms)
         {
             if (connection.State != ConnectionState.Open) connection.Open();
@@ -327,6 +319,7 @@ namespace Helpers
                 command.Parameters.AddRange(parms);
             }
         }
+        #endregion
 
         #region ExecuteNonQuery
 
@@ -855,6 +848,18 @@ namespace Helpers
                 connection.Dispose();
             }
         }
+
+        /// <summary>
+        ///大批量数据插入,返回成功插入行数
+        /// </summary>
+        /// <param name="table">数据表</param>
+        /// <returns>返回成功插入行数</returns>
+        public static int BulkInsert(DataTable table)
+        {
+            return BulkInsert(connectionString, table);
+        }
+
+
 
         /// <summary>
         ///大批量数据插入,返回成功插入行数
