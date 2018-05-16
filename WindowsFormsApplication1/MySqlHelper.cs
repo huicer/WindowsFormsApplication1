@@ -809,7 +809,12 @@ namespace Helpers
 
         #endregion ExecuteDataSet
 
-        public static ArrayList ExecuteArrayList(string databasename,string tableName)
+        /// <summary>
+        /// 从数据库的information_schema系统表中读取相应的表的所有字段
+        /// </summary>
+        /// <param name="tableName"></param>
+        /// <returns></returns>
+        public static ArrayList ExecuteArrayList(string tableName)
         {
             ArrayList list1 = new ArrayList();
             string commandText = "SELECT COLUMN_NAME from information_schema.COLUMNS WHERE TABLE_NAME = @tablename AND TABLE_SCHEMA = @databasename";
