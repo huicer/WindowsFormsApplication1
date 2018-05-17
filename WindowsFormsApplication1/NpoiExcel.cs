@@ -3,9 +3,6 @@ using System;
 using System.Collections.Generic;
 using System.Data;
 using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using NPOI.HSSF.UserModel;
 using NPOI.XSSF.UserModel;
 using System.Collections;
@@ -18,7 +15,7 @@ namespace WindowsFormsApplication1
 
 
         /// <summary>
-        /// Excel导入成Datable
+        /// Excel导入成DataTable
         /// </summary>
         /// <param name="file">导入路径(包含文件名与扩展名)</param>
         /// <returns></returns>
@@ -27,39 +24,74 @@ namespace WindowsFormsApplication1
             DataTable dt = new DataTable();
             IWorkbook workbook;
             string fileExt = Path.GetExtension(file).ToLower();
+
+            //使用using方式，相当于try{}finally{},使用完成会自动释放
             using (FileStream fs = new FileStream(file, FileMode.Open, FileAccess.Read))
             {
                 //XSSFWorkbook 适用XLSX格式，HSSFWorkbook 适用XLS格式
-                if (fileExt == ".xlsx") { workbook = new XSSFWorkbook(fs); } else if (fileExt == ".xls") { workbook = new HSSFWorkbook(fs); } else { workbook = null; }
-                if (workbook == null) { return null; }
-                ISheet sheet = workbook.GetSheetAt(0);
+                if (fileExt == ".xlsx")
+                {
+                    workbook = new XSSFWorkbook(fs);
+                }
+                else if (fileExt == ".xls")
+                {
+                    workbook = new HSSFWorkbook(fs);
+                }
+                else
+                {
+                    workbook = null;
+                    return null;
+                }
 
-                //表头  
-                IRow header = sheet.GetRow(sheet.FirstRowNum);
+                ISheet sheet = workbook.GetSheetAt(0);   //获取第一个工作表  
+
+                IRow header = sheet.GetRow(sheet.FirstRowNum);  //获取当前工作表第一行表头数据
+
                 List<int> columns = new List<int>();
+                bool isexception = false;
+                //将Excel中的表头数据存入Datatable中，注意：如有相同的则提示异常  
+
+                //对工作表表头的每一列 
                 for (int i = 0; i < header.LastCellNum; i++)
                 {
-                    object obj = GetValueType(header.GetCell(i));
+                    object obj = GetValueType(header.GetCell(i));   //获取表头某列数据的类型
                     if (obj == null || obj.ToString() == string.Empty)
                     {
                         dt.Columns.Add(new DataColumn("Columns" + i.ToString()));
                     }
                     else
-                        dt.Columns.Add(new DataColumn(obj.ToString()));
-                    columns.Add(i);
+                    {
+                        try
+                        {
+                            dt.Columns.Add(new DataColumn(obj.ToString()));
+                            
+                        }
+                        catch (Exception)
+                        {
+                            //Console.WriteLine(obj.ToString() + ":相同行出现 ");
+                            isexception = true;
+                        }
+                    }
+                    if (!isexception)
+                    {
+                        columns.Add(i);
+                    }
                 }
-                //数据  
+
+                //对Excel中数据的处理  
                 for (int i = sheet.FirstRowNum + 1; i <= sheet.LastRowNum; i++)
                 {
                     DataRow dr = dt.NewRow();
                     bool hasValue = false;
+                    int k = 0;
                     foreach (int j in columns)
                     {
-                        dr[j] = GetValueType(sheet.GetRow(i).GetCell(j));
-                        if (dr[j] != null && dr[j].ToString() != string.Empty)
+                        dr[k] = GetValueType(sheet.GetRow(i).GetCell(j));
+                        if (dr[k] != null && dr[k].ToString() != string.Empty)
                         {
                             hasValue = true;
                         }
+                        k++;
                     }
                     if (hasValue)
                     {
@@ -75,7 +107,7 @@ namespace WindowsFormsApplication1
         /// </summary>
         /// <param name="file">导入路径(包含文件名与扩展名)</param>
         /// <returns></returns>
-        public static DataTable ExcelToTable(string file,ArrayList arr)
+        public static DataTable ExcelToTable(string file, ArrayList arr)
         {
             DataTable dt = new DataTable();
             IWorkbook workbook;
@@ -83,13 +115,26 @@ namespace WindowsFormsApplication1
             using (FileStream fs = new FileStream(file, FileMode.Open, FileAccess.Read))
             {
                 //XSSFWorkbook 适用XLSX格式，HSSFWorkbook 适用XLS格式
-                if (fileExt == ".xlsx") { workbook = new XSSFWorkbook(fs); } else if (fileExt == ".xls") { workbook = new HSSFWorkbook(fs); } else { workbook = null; }
-                if (workbook == null) { return null; }
+                if (fileExt == ".xlsx")
+                {
+                    workbook = new XSSFWorkbook(fs);
+                }
+                else if (fileExt == ".xls")
+                {
+                    workbook = new HSSFWorkbook(fs);
+                }
+                else
+                {
+                    workbook = null;
+                    return null;
+                }
                 ISheet sheet = workbook.GetSheetAt(0);
-
-                //表头  
                 IRow header = sheet.GetRow(sheet.FirstRowNum);
                 List<int> columns = new List<int>();
+                bool isexception = false;
+
+                //将Excel中的表头数据存入Datatable中，注意：如有相同的则提示异常  
+                //对于表头数据的处理
                 for (int i = 0; i < header.LastCellNum; i++)
                 {
                     object obj = GetValueType(header.GetCell(i));
@@ -98,21 +143,37 @@ namespace WindowsFormsApplication1
                         dt.Columns.Add(new DataColumn("Columns" + i.ToString()));
                     }
                     else
-                        dt.Columns.Add(new DataColumn(obj.ToString()));
-                    columns.Add(i);
+                    {
+                        try
+                        {
+                            dt.Columns.Add(new DataColumn(obj.ToString()));                           
+                        }
+                        catch (Exception)
+                        {
+                            Console.WriteLine(obj.ToString() + ":相同行出现 ");
+                            isexception = true;
+                        }
+                    }
+                    if (!isexception)
+                    {
+                        columns.Add(i);
+                    }
                 }
-                //数据  
+
+                //Excel中的数据部分处理 
                 for (int i = sheet.FirstRowNum + 1; i <= sheet.LastRowNum; i++)
                 {
                     DataRow dr = dt.NewRow();
                     bool hasValue = false;
+                    int k = 0;
                     foreach (int j in columns)
                     {
-                        dr[j] = GetValueType(sheet.GetRow(i).GetCell(j));
-                        if (dr[j] != null && dr[j].ToString() != string.Empty)
+                        dr[k] = GetValueType(sheet.GetRow(i).GetCell(j));
+                        if (dr[k] != null && dr[k].ToString() != string.Empty)
                         {
                             hasValue = true;
                         }
+                        k++;
                     }
                     if (hasValue)
                     {
@@ -203,21 +264,21 @@ namespace WindowsFormsApplication1
         public static void ExcelImport(string fileName)
         {
             IWorkbook workbook = null;  //新建IWorkbook对象  
-            //string fileName = "E:\\Excel2003.xls";
-            //FileStream fileStream = new FileStream(@"E:\Excel2003.xls", FileMode.Open, FileAccess.Read);
+                                        //string fileName = "E:\\Excel2003.xls";
+                                        //FileStream fileStream = new FileStream(@"E:\Excel2003.xls", FileMode.Open, FileAccess.Read);
             FileStream fileStream = null;
             try
             {
-                fileStream =  new FileStream(@fileName, FileMode.Open, FileAccess.Read);
+                fileStream = new FileStream(@fileName, FileMode.Open, FileAccess.Read);
             }
             catch (Exception)
             {
 
                 throw;
             }
-          
 
-           if (fileName.IndexOf(".xlsx") > 0) // 2007版本  
+
+            if (fileName.IndexOf(".xlsx") > 0) // 2007版本  
             {
                 workbook = new XSSFWorkbook(fileStream);  //xlsx数据读入workbook  
             }
@@ -236,7 +297,7 @@ namespace WindowsFormsApplication1
                     for (int j = 0; j < row.LastCellNum; j++)  //对工作表每一列  
                     {
                         string cellValue = row.GetCell(j).ToString(); //获取i行j列数据  
-                        //Console.WriteLine(cellValue);
+                                                                      //Console.WriteLine(cellValue);
 
                     }
                 }
@@ -254,8 +315,8 @@ namespace WindowsFormsApplication1
         public static void ExcelImport(string fileName, ArrayList arr)
         {
             IWorkbook workbook = null;  //新建IWorkbook对象  
-            //string fileName = "E:\\Excel2003.xls";
-            //FileStream fileStream = new FileStream(@"E:\Excel2003.xls", FileMode.Open, FileAccess.Read);
+                                        //string fileName = "E:\\Excel2003.xls";
+                                        //FileStream fileStream = new FileStream(@"E:\Excel2003.xls", FileMode.Open, FileAccess.Read);
             FileStream fileStream = null;
             try
             {
@@ -263,7 +324,7 @@ namespace WindowsFormsApplication1
             }
             catch (Exception)
             {
-                MessageBox.Show("所导入的文件正在被其他程序使用，请关闭其他程序并重试！","错误信息");
+                MessageBox.Show("所导入的文件正在被其他程序使用，请关闭其他程序并重试！", "错误信息");
                 //throw;
             }
 
@@ -310,7 +371,7 @@ namespace WindowsFormsApplication1
             //将Excel表头数据放到List中
             for (int j = 0; j < row.LastCellNum; j++)  //对工作表每一列  
             {
-                  string cellValue = row.GetCell(j).ToString(); //获取表头j列数据
+                string cellValue = row.GetCell(j).ToString(); //获取表头j列数据
                 excellist.Add(cellValue);
             }
             //将数据表的字段名放入List中
@@ -319,30 +380,30 @@ namespace WindowsFormsApplication1
                 tablelist.Add(item.ToString());
                 Console.WriteLine(item.ToString());
             }
-            int temp=-1;
+            int temp = -1;
 
             //将与数据表中的字段匹配的Excel中的列的位置放入List中
             for (int i = 0; i < tablelist.Count; i++)
             {
                 temp = excellist.IndexOf(tablelist[i]);//temp为-1表示没有搜索到
-                    //将ArrsyList中的数据删除掉匹配的项
-                    //excellist.RemoveAt(temp); 
-                    list1.Add(temp);
-              
+                                                       //将ArrsyList中的数据删除掉匹配的项
+                                                       //excellist.RemoveAt(temp); 
+                list1.Add(temp);
+
             }
 
             //list的遍历 
-            string strTest="";
+            string strTest = "";
             foreach (int i in list1)
                 strTest += i.ToString() + " ";
             //格式化后输出 
             Console.Write(string.Format("Out:{0} nCount:{1}n", strTest, list1.Count));
-          
+
 
             //将Excel中与数据库所指定的表相对应的字段匹配的内容，导入到数据库中
             for (int i = 1; i < sheet.LastRowNum; i++)  //对工作表每一行  ,从1 行开始，0行为表头
             {
-                 ArrayList rowlist = new ArrayList();
+                ArrayList rowlist = new ArrayList();
                 row = sheet.GetRow(i);   //row读入第i行数据 
 
                 //将row中的数据存放到数据库表的相应字段中，多余的舍弃
@@ -353,9 +414,11 @@ namespace WindowsFormsApplication1
                     //    string cellValue = row.GetCell(j).ToString(); //获取i行j列数据  
                     //    //Console.WriteLine(cellValue);
                     //}
+
+                    //获得每一行的数据
                     foreach (int j in list1)
                     {
-                        if (j==-1)
+                        if (j == -1)
                         {
                             continue;
                         }
@@ -364,10 +427,14 @@ namespace WindowsFormsApplication1
                         //Console.WriteLine(cellValue);
                     }
 
+                    //将每一行的数据进行处理，将其存入数据库中
+                    //待处理.............
+
+
 
                 }
             }
-           // Console.ReadLine();
+            // Console.ReadLine();
             fileStream.Close();
             workbook.Close();
         }
@@ -390,7 +457,7 @@ namespace WindowsFormsApplication1
             for (int i = 0; i < 10; i++)
             {
                 IRow row = sheet.CreateRow(i); //i表示了创建行的索引，从0开始
-                //创建单元格
+                                               //创建单元格
                 for (int j = 0; j < 5; j++)
                 {
                     ICell cell = row.CreateCell(j);  //同时这个函数还有第二个重载，可以指定单元格存放数据的类型
@@ -408,7 +475,7 @@ namespace WindowsFormsApplication1
             }
 
         }
-    
+
     }
-    
+
 }

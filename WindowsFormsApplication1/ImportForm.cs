@@ -32,14 +32,18 @@ namespace WindowsFormsApplication1
                 //首先将数据内容导入到单位基本信息表中（这只是在程序初始化阶段完成）
 
                 DataTable dt = null;
+                DataTable dtTemp = null;
                 //将"单位基本信息"表中的字段读取到listBox1中
-                ArrayList arr = MySqlHelper.ExecuteArrayList("单位基本信息");
-                listBox1.DataSource=  arr;
-                NpoiExcel.ExcelImport(fileName,arr);
-                //dt = NpoiExcel.ExcelToTable(fileName);
-                //dt.TableName = "单位基本信息";
-                //dataGridView1.DataSource = dt.DefaultView;
-                //MySqlHelper.BulkInsert(dt);
+                //ArrayList arr = MySqlHelper.ExecuteArrayList("单位基本信息");
+               // listBox1.DataSource=  arr;
+                //NpoiExcel.ExcelImport(fileName,arr);
+                dt = NpoiExcel.ExcelToTable(fileName);//数据源表               
+                
+
+                 dtTemp = dt.DefaultView.ToTable(false, new string[] { "组织机构代码", "单位名称","行政区划","行业代码","管理机构" });
+                dataGridView1.DataSource = dtTemp.DefaultView;
+                dtTemp.TableName = "单位基本信息";
+                MySqlHelper.BulkInsert(dtTemp);
             }
         }
 
