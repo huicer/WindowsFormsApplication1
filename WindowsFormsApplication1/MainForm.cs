@@ -125,9 +125,6 @@ namespace WindowsFormsApplication1
             childForm.MdiParent = this;
             childForm.Text = "窗口 " + childFormNumber++;
             childForm.Show();
-
-
-
         }
 
         private void newToolStripMenuItem_Click(object sender, EventArgs e)
@@ -140,6 +137,39 @@ namespace WindowsFormsApplication1
         }
 
         private void MainForm_Load(object sender, EventArgs e)
+        {
+            this.WindowState = FormWindowState.Maximized;
+        }
+
+        private void saveToolStripButton_Click(object sender, EventArgs e)
+        {
+            Form childForm = new ImportForm();
+            childForm.MdiParent = this;
+            childForm.Text = "窗口 " + childFormNumber++;
+            childForm.Show();
+
+        }
+
+        private void 企业信息查询ToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            Form childForm = new CompanyInfo();
+            childForm.MdiParent = this;
+            childForm.Text = "窗口 " + childFormNumber++;
+            childForm.Show();
+
+        }
+
+        private void printSetupToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void printPreviewToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void printToolStripMenuItem_Click(object sender, EventArgs e)
         {
 
         }

@@ -3,14 +3,16 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
 using System.Drawing;
+using System.Linq;
 using System.Text;
+using System.Threading.Tasks;
 using System.Windows.Forms;
 
-namespace WindowsFormsApplication1
+namespace WindowsFormsApplication1.SearchForm
 {
-    public partial class MainForm1 : Telerik.WinControls.UI.RadRibbonForm
+    public partial class AdvanceSearchForm : Form
     {
-        public MainForm1()
+        public AdvanceSearchForm()
         {
             InitializeComponent();
         }

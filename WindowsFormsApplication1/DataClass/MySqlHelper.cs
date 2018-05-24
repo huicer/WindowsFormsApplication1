@@ -7,6 +7,7 @@ using MySql.Data.MySqlClient;
 using System.Windows.Forms;
 using System.Collections;
 using WindowsFormsApplication1;
+using System.Collections.Generic;
 
 namespace Helpers
 {
@@ -337,6 +338,21 @@ namespace Helpers
         /// <param name="commandText">SQL语句</param>
         /// <param name="parms">查询参数</param>
         /// <returns>返回影响的行数</returns>
+        public static int ExecuteNonQuery(int i,string commandText, params MySqlParameter[] parms)
+        {
+            using (MySqlConnection connection = new MySqlConnection(connectionString))
+            {
+                return ExecuteNonQuery(connection, CommandType.Text, commandText, parms);
+            }
+        }
+
+        /// <summary>
+        /// 执行SQL语句,返回影响的行数
+        /// </summary>
+        /// <param name="connectionString">数据库连接字符串</param>
+        /// <param name="commandText">SQL语句</param>
+        /// <param name="parms">查询参数</param>
+        /// <returns>返回影响的行数</returns>
         public static int ExecuteNonQuery(string connectionString, string commandText, params MySqlParameter[] parms)
         {
             using (MySqlConnection connection = new MySqlConnection(connectionString))
@@ -650,6 +666,7 @@ namespace Helpers
             return ExecuteDataSet(connectionString, CommandType.Text, commandText, parms).Tables[0];
         }
 
+
         /// <summary>
         /// 执行SQL语句,返回结果集中的第一个数据表
         /// </summary>
@@ -705,6 +722,18 @@ namespace Helpers
         #region ExecuteDataSet
 
         /// <summary>
+        /// 执行SQL语句,返回Dataset结果集
+        /// </summary>
+        /// <param name="test">这是一个无意义的参数，为了重载</param>
+        /// <param name="commandText"></param>
+        /// <param name="parms"></param>
+        /// <returns></returns>
+        public static DataSet ExecuteDataSet(int test,string commandText, params MySqlParameter[] parms)
+        {
+            return ExecuteDataSet(connectionString, CommandType.Text, commandText, parms);
+        }
+
+        /// <summary>
         /// 执行SQL语句,返回结果集
         /// </summary>
         /// <param name="connectionString">数据库连接字符串</param>
@@ -731,6 +760,8 @@ namespace Helpers
                 return ExecuteDataSet(connection, commandType, commandText, parms);
             }
         }
+
+
 
         /// <summary>
         /// 执行SQL语句,返回结果集
@@ -776,7 +807,7 @@ namespace Helpers
 
             DataSet ds = new DataSet();
             adapter.Fill(ds);
-            if (commandText.IndexOf("@") > 0)
+            if (commandText.IndexOf("?") > 0)
             {
                 commandText = commandText.ToLower();
                 int index = commandText.IndexOf("where ");
@@ -808,7 +839,9 @@ namespace Helpers
         }
 
         #endregion ExecuteDataSet
-
+        
+        #region ExecuteArrayList
+        
         /// <summary>
         /// 从数据库的information_schema系统表中读取相应的表的所有字段
         /// </summary>
@@ -832,6 +865,8 @@ namespace Helpers
             return list1;
         }
 
+        #endregion
+        
 
         #region 批量操作
 
@@ -896,10 +931,70 @@ namespace Helpers
         /// <summary>
         ///大批量数据插入,返回成功插入行数
         /// </summary>
+        /// <param name="table">数据表</param>
+        /// <returns>返回成功插入行数</returns>
+        public static int BulkInsert(DataTable table, List<string> dinosaurs)
+        {
+            return BulkInsert(connectionString, table, dinosaurs);
+        }
+
+        /// <summary>
+        ///大批量数据插入,返回成功插入行数
+        /// </summary>
         /// <param name="connectionString">数据库连接字符串</param>
         /// <param name="table">数据表</param>
         /// <returns>返回成功插入行数</returns>
         public static int BulkInsert(string connectionString, DataTable table)
+        {
+            if (string.IsNullOrEmpty(table.TableName)) throw new Exception("请给DataTable的TableName属性附上表名称");
+            if (table.Rows.Count == 0) return 0;
+            int insertCount = 0;
+            string tmpPath = Path.GetTempFileName();
+            string csv = DataTableToCsv(table);
+            File.WriteAllText(tmpPath, csv);
+            using (MySqlConnection conn = new MySqlConnection(connectionString))
+            {
+                //MySqlTransaction tran = null;
+                try
+                {
+                    conn.Open();
+                    //tran = conn.BeginTransaction();
+                    MySqlBulkLoader bulk = new MySqlBulkLoader(conn)
+                    {
+                        FieldTerminator = ",",//字段结束标志
+                        FieldQuotationCharacter = '"',//字段引用字符
+                        EscapeCharacter = '"',
+                        LineTerminator = "\r\n",//一行数据的结束
+                        FileName = tmpPath,
+                        NumberOfLinesToSkip = 0,
+                        TableName = table.TableName,
+                    };
+
+                    //现在的问题：字段中含有-名的字段无法导入
+                    //bl.Columns.AddRange(columns)
+                    //bulk.Columns.AddRange(table.Columns.Cast<DataColumn>().Select(colum => colum.ColumnName).ToList());
+                    //bulk.Columns.AddRange(table.Columns);
+                    insertCount = bulk.Load();
+                   // tran.Commit();
+                }
+                catch (MySqlException ex)
+                {
+                    //if (tran != null) tran.Rollback();
+                    //throw ex;
+                    MessageBox.Show("保存到数据库中出现问题，未完成导入。"+ex.Message);
+                }
+            }
+            File.Delete(tmpPath);
+            return insertCount;
+        }
+
+        /// <summary>
+        ///大批量数据插入,返回成功插入行数
+        /// </summary>
+        /// <param name="connectionString">数据库连接字符串</param>
+        /// <param name="table">数据表</param>
+        /// <returns>返回成功插入行数</returns>
+        public static int BulkInsert(string connectionString, DataTable table, List<string> dinosaurs)
         {
             if (string.IsNullOrEmpty(table.TableName)) throw new Exception("请给DataTable的TableName属性附上表名称");
             if (table.Rows.Count == 0) return 0;
@@ -916,27 +1011,33 @@ namespace Helpers
                     tran = conn.BeginTransaction();
                     MySqlBulkLoader bulk = new MySqlBulkLoader(conn)
                     {
-                        FieldTerminator = ",",
-                        FieldQuotationCharacter = '"',
+                        FieldTerminator = ",",//字段结束标志
+                        FieldQuotationCharacter = '"',//字段引用字符
                         EscapeCharacter = '"',
-                        LineTerminator = "\r\n",
+                        LineTerminator = "\r\n",//一行数据的结束
                         FileName = tmpPath,
                         NumberOfLinesToSkip = 0,
                         TableName = table.TableName,
                     };
-                    bulk.Columns.AddRange(table.Columns.Cast<DataColumn>().Select(colum => colum.ColumnName).ToList());
+
+                    //现在的问题：字段中含有-名的字段无法导入
+                    //bl.Columns.AddRange(columns)
+                    //bulk.Columns.AddRange(table.Columns.Cast<DataColumn>().Select(colum => colum.ColumnName).ToList());
+                    bulk.Columns.AddRange(dinosaurs);
                     insertCount = bulk.Load();
                     tran.Commit();
                 }
                 catch (MySqlException ex)
                 {
                     if (tran != null) tran.Rollback();
-                    throw ex;
+                    //throw ex;
+                    MessageBox.Show("保存到数据库中出现问题，未完成导入。" + ex.Message);
                 }
             }
             File.Delete(tmpPath);
             return insertCount;
         }
+
         #endregion
 
         #region DataTableToCsv
