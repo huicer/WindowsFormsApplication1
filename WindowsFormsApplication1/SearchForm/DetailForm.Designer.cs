@@ -1955,6 +1955,7 @@
             this.comboBox2.Size = new System.Drawing.Size(296, 35);
             this.comboBox2.TabIndex = 3;
             this.comboBox2.SelectedIndexChanged += new System.EventHandler(this.comboBox2_SelectedIndexChanged);
+            this.comboBox2.SelectionChangeCommitted += new System.EventHandler(this.comboBox2_SelectionChangeCommitted);
             // 
             // label2
             // 
@@ -1970,21 +1971,18 @@
             // 
             this.comboBox1.FormattingEnabled = true;
             this.comboBox1.Items.AddRange(new object[] {
-            "按姓名查询",
-            "按性别查询",
-            "按民族查询",
-            "按文化程度查询",
-            "按政治面貌查询",
-            "按职工类别查询",
-            "按职工职务查询",
-            "按职工部门查询",
-            "按职称类别查询",
-            "按工资类别查询"});
+            "按月份查询",
+            "按季度查询",
+            "按年度查询"});
             this.comboBox1.Location = new System.Drawing.Point(205, 34);
             this.comboBox1.Margin = new System.Windows.Forms.Padding(7);
             this.comboBox1.Name = "comboBox1";
             this.comboBox1.Size = new System.Drawing.Size(314, 35);
             this.comboBox1.TabIndex = 1;
+            this.comboBox1.Text = "请选择类型...";
+            this.comboBox1.SelectedIndexChanged += new System.EventHandler(this.comboBox1_SelectedIndexChanged);
+            this.comboBox1.SelectionChangeCommitted += new System.EventHandler(this.comboBox1_SelectionChangeCommitted);
+            this.comboBox1.SelectedValueChanged += new System.EventHandler(this.comboBox1_SelectedValueChanged);
             // 
             // DetailForm
             // 
@@ -1997,6 +1995,7 @@
             this.Controls.Add(this.groupBox1);
             this.Name = "DetailForm";
             this.Text = "DetailForm";
+            this.Load += new System.EventHandler(this.DetailForm_Load);
             this.groupBox4.ResumeLayout(false);
             this.groupBox5.ResumeLayout(false);
             this.tabControl1.ResumeLayout(false);

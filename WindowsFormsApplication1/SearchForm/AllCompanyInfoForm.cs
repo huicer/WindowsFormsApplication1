@@ -94,5 +94,13 @@ namespace WindowsFormsApplication1.SearchForm
         {
 
         }
+
+        private void comboBox1_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            if (comboBox1.SelectedValue=="")
+            {
+
+            }
+        }
     }
 }

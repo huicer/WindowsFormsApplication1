@@ -142,7 +142,11 @@ namespace WindowsFormsApplication1
         private void dataGridView1_CellContentDoubleClick(object sender, DataGridViewCellEventArgs e)
         {
             string cell1 =dataGridView1.CurrentRow.Cells[1].Value.ToString();
-            MessageBox.Show("选中的当前行为"+cell1);
+            //MessageBox.Show("选中的当前行为"+cell1);
+            Form childForm = new SearchForm.DetailForm(cell1);
+            childForm.MdiParent = this.ParentForm;
+            childForm.Text = "窗口 " ;
+            childForm.Show();
         }
 
         private void dataGridView1_CellContentClick(object sender, DataGridViewCellEventArgs e)

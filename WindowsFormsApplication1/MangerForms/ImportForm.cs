@@ -39,6 +39,18 @@ namespace WindowsFormsApplication1
 
                     string importType = comboBox2.SelectedItem.ToString();
 
+                    //判断数据库中是否存在所导入的时间类型（某月、某季、某年），
+                    //如果存在则显示”已经存在，不能导入“
+
+                    List<string> list = new List<string>();
+                    string sql = "select distinct 报表时间类型 from 月报表数据信息";
+                    list = SQLHelper.ExecuteReaderToString(sql, CommandType.Text, null);
+                    if (list.Contains(importType))
+                    {
+                        MessageBox.Show("该报表时间类型在数据库中已经存在！无法导入！");
+                        return;
+                    }
+
                     //首先将数据内容导入到单位基本信息表中（这只是在程序初始化阶段完成）
 
                     DataTable dt = null;
@@ -48,6 +60,7 @@ namespace WindowsFormsApplication1
                     {
                         return;
                     }
+
 
                     //将数据保存到“单位基本信息”表中
                     // result :将数据导入到数据表中影响到的行数
@@ -77,7 +90,7 @@ namespace WindowsFormsApplication1
                     //当该导入没有成功时，返回错误信息，并且将“月报表数据信息”刚导入的表中数据删除
                     if (result3 <= 0)
                     {
-                        string sql = "delete from 月报表数据信息 where 报表时间类型='" + importType + "'";
+                        sql = "delete from 月报表数据信息 where 报表时间类型='" + importType + "'";
                         MySqlHelper.ExecuteNonQuery(0,sql,null);
                         return;
                     }
@@ -174,7 +187,21 @@ namespace WindowsFormsApplication1
                 {
                     string fileName = openFileDialog.FileName;
 
+                    //导入的时间类型（某月、某季、某年）
                     string importType = comboBox2.SelectedItem.ToString();
+
+                    //判断数据库中是否存在所导入的时间类型（某月、某季、某年），
+                    //如果存在则显示”已经存在，不能导入“
+
+                    List<string> list = new List<string>(); 
+                    string sql = "select distinct 报表时间类型 from 月报表数据信息";
+                        list = SQLHelper.ExecuteReaderToString(sql, CommandType.Text, null);
+                        if (list.Contains(importType ))
+                        {
+                            MessageBox.Show("该报表时间类型在数据库中已经存在！无法导入！");
+                            return;
+                        }
+                 
 
                     //首先将数据内容导入到单位基本信息表中（这只是在程序初始化阶段完成）
 
@@ -187,21 +214,37 @@ namespace WindowsFormsApplication1
                     }
 
                     //将数据保存到“单位基本信息”表中
-                    MyFunction.DataTableToDatabase(dt, "单位基本信息");
+                    // result :将数据导入到数据表中影响到的行数
+                    int result = MyFunction.DataTableToDatabase(dt, "单位基本信息");
 
+                    //当该导入没有成功时，返回错误信息，后面就不再导入
+                    if (result <= 0)
+                    {
+                        return;
+                    }
 
-                    //添加一新列，其值为默认值,类型为string类型
+                    //添加一新列，其值为默认值
                     DataColumn dc1 = new DataColumn("报表时间类型", typeof(string));
                     dc1.DefaultValue = importType;
                     dc1.AllowDBNull = false;//这在初始表的时候，其作用，在为已有表新增列的时候，不起作用
                     dt.Columns.Add(dc1);
 
                     //将数据保存到“月报表数据信息”表中
-                    MyFunction.DataTableToDatabase(dt, "月报表数据信息");
-
+                    int result2 = MyFunction.DataTableToDatabase(dt, "月报表数据信息");
+                    if (result2 <= 0)
+                    {
+                        return;
+                    }
                     //将数据保存到“月报表全部数据信息”表中
-                    MyFunction.DataTableToDatabase(dt, "月报表全部数据信息");
+                    int result3 = MyFunction.DataTableToDatabase(dt, "月报表全部数据信息");
 
+                    //当该导入没有成功时，返回错误信息，并且将“月报表数据信息”刚导入的表中数据删除
+                    if (result3 <= 0)
+                    {
+                        sql = "delete from 月报表数据信息 where 报表时间类型='" + importType + "'";
+                        MySqlHelper.ExecuteNonQuery(0, sql, null);
+                        return;
+                    }
                     dataGridView1.DataSource = dt.DefaultView;
 
                 }

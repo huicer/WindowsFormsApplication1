@@ -28,9 +28,17 @@
         /// </summary>
         private void InitializeComponent()
         {
-            this.components = new System.ComponentModel.Container();
+            this.SuspendLayout();
+            // 
+            // AdvanceSearchForm
+            // 
+            this.AutoScaleDimensions = new System.Drawing.SizeF(14F, 27F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
+            this.ClientSize = new System.Drawing.Size(1764, 1104);
+            this.Name = "AdvanceSearchForm";
             this.Text = "AdvanceSearchForm";
+            this.ResumeLayout(false);
+
         }
 
         #endregion

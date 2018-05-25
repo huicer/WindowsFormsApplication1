@@ -138,6 +138,9 @@
       <DependentUpon>DetailForm.cs</DependentUpon>
     </Compile>
     <Compile Include="Test\test1.cs" />
+    <EmbeddedResource Include="SearchForm\AdvanceSearchForm.resx">
+      <DependentUpon>AdvanceSearchForm.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="SearchForm\AllCompanyInfoForm.resx">
       <DependentUpon>AllCompanyInfoForm.cs</DependentUpon>
     </EmbeddedResource>

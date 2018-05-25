@@ -20,10 +20,10 @@ namespace WindowsFormsApplication1
         {
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
-            //Application.Run(new MainForm());
+            Application.Run(new MainForm());
 
             //测试用
-            Application.Run(new AllCompanyInfoForm());
+            //Application.Run(new DetailForm());
         }
     }
 }
